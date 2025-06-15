@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sa7.jobfiy.authentication.ui.screens.login.LoginViewModel
 import com.sa7.jobfiy.ui.theme.Purple40
-
+import androidx.compose.foundation.text.ClickableText
 
 @Composable
 fun NormalTextComponent(value: String) {
@@ -54,27 +53,6 @@ fun HeadingTextComponent(value: String) {
         color = Purple40,
         textAlign = TextAlign.Center
     )
-}
-
-@Composable
-fun ClickableTextComponent(value: String, onClickButton: () -> Unit) {
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
-    ) {
-        ClickableText(
-            // AnnotatedString is used to add multiple styles to the text
-            text = AnnotatedString(value),
-            onClick = { onClickButton() },
-            modifier = Modifier
-                .padding(top = 16.dp),
-            style = TextStyle(
-                fontSize = 16.sp,
-                color = Purple40,
-                textAlign = TextAlign.Center
-            )
-        )
-    }
 }
 
 @Composable

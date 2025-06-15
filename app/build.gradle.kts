@@ -57,7 +57,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -83,7 +82,7 @@ dependencies {
     implementation (libs.gson)
     implementation (libs.okhttp)
     implementation (libs.logging.interceptor)
-    implementation (libs.retrofit) // Replace with the latest version
+    implementation (libs.retrofit)
     implementation (libs.converter.gson)
     implementation(platform(libs.google.firebase.bom))
     implementation(libs.google.firebase.auth)
@@ -97,5 +96,7 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-flowlayout:0.24.13-rc")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
-
+    
+    // Add material-icons-extended dependency with version matching Compose BOM
+    implementation("androidx.compose.material:material-icons-extended")
 }

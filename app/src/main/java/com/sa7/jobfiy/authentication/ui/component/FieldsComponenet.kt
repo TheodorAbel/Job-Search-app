@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.Green
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -36,10 +37,14 @@ import com.sa7.jobfiy.ui.theme.PurpleGrey40
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TextFieldComponent(labelValue: String, icon: Painter, onTextSelected: (String) -> Unit,
-                       errorStatus: Boolean,
-                       errorMessage: String? = null) {
-    val textValue = remember { mutableStateOf("") }
+fun TextFieldComponent(
+    value: String,
+    labelValue: String,
+    icon: Painter,
+    onTextSelected: (String) -> Unit,
+    errorStatus: Boolean,
+    errorMessage: String? = null
+) {
     Column (modifier = Modifier.padding(vertical = 4.dp)){
         OutlinedTextField(
             shape = RoundedCornerShape(8.dp),
@@ -50,21 +55,16 @@ fun TextFieldComponent(labelValue: String, icon: Painter, onTextSelected: (Strin
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp),
-            value = textValue.value,
+            value = value,
             onValueChange = {
-                textValue.value = it
-                // Call the onTextSelected lambda function
                 onTextSelected(it)
             },
             label = { Text(text = labelValue, style = MaterialTheme.typography.bodyMedium) },
             keyboardOptions = KeyboardOptions(
-                // Change the imeAction to Next
                 imeAction = ImeAction.Next
             ),
             maxLines = 1,
-            // Set the error status
             isError = errorStatus,
-            // Add leading and trailing icons
             leadingIcon = {
                 Icon(
                     painter = icon,
@@ -73,7 +73,6 @@ fun TextFieldComponent(labelValue: String, icon: Painter, onTextSelected: (Strin
                 )
             },
             trailingIcon = {
-                // Display the error icon if errorStatus is true
                 if (errorStatus)
                     Icon(
                         Icons.Filled.Warning,
@@ -82,7 +81,6 @@ fun TextFieldComponent(labelValue: String, icon: Painter, onTextSelected: (Strin
                     )
             },
         )
-        // Display the error message if errorStatus is true and errorMessage is not null
         if (errorStatus && errorMessage != null) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -93,7 +91,6 @@ fun TextFieldComponent(labelValue: String, icon: Painter, onTextSelected: (Strin
             )
         }
     }
-
 }
 
 
@@ -104,7 +101,8 @@ fun PasswordTextFieldComponent(
     isDone: Boolean = true,
     onTextSelected: (String) -> Unit,
     errorStatus: Boolean,
-    errorMessage: String? = null
+    errorMessage: String? = null,
+    icon: ImageVector
 ) {
     val passwordTextValue = remember { mutableStateOf("") }
     // Password visibility icon state

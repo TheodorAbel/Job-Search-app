@@ -1,62 +1,92 @@
 package com.sa7.jobfiy.ui.navigation
 
-import JobDetailPage
-import JobifyScreen
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.sa7.jobfiy.authentication.ui.screens.HomeScreen
 import com.sa7.jobfiy.authentication.ui.screens.login.LoginScreen
 import com.sa7.jobfiy.authentication.ui.screens.login.LoginViewModel
-import com.sa7.jobfiy.authentication.ui.screens.resetPassword.ResetPasswordScreen
 import com.sa7.jobfiy.authentication.ui.screens.signUp.SignUpScreen
-import com.sa7.jobfiy.authentication.ui.screens.signUp.SignUpViewModel
 import com.sa7.jobfiy.ui.screens.HomeScreen.HomeScreenViewModel
-import java.lang.reflect.Modifier
+import com.sa7.jobfiy.ui.screens.HomeScreen.JobifyScreen
+import com.sa7.jobfiy.ui.screens.JobDescriptionScreen.JobDetailPage
+import com.sa7.jobfiy.ui.screens.JobDescriptionScreen.JobDescriptionViewModel
+import com.sa7.jobfiy.ui.fragments.JobSearchFragment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.remember
+import com.sa7.jobfiy.authentication.data.repository.AuthRepository
 
-object Routes {
-    const val SIGN_UP = "signup"
-    const val LOGIN = "login"
-    const val RESET_PASSWORD = "reset_password"
-    const val JOBIFY_SCREEN = "jobify_screen"
-    const val JOB_DESCRIPTION = "job_description/{id}"
-
+sealed class AppRoutes(val route: String) {
+    object LOGIN : AppRoutes("login")
+    object SIGN_UP : AppRoutes("signup")
+    object HOME : AppRoutes("home")
+    object JOB_DESCRIPTION : AppRoutes("job_description/{jobId}") {
+        fun createRoute(jobId: String) = "job_description/$jobId"
+    }
+    object JOB_APPLICATION : AppRoutes("job_application/{jobId}") {
+        fun createRoute(jobId: String) = "job_application/$jobId"
+    }
+    object JOB_SEARCH : AppRoutes("job_search")
 }
 
 @Composable
-fun AppNavHost(loginViewModel: LoginViewModel = viewModel()) {
-    val viewModel: HomeScreenViewModel =
-        ViewModelProvider(LocalContext.current as ViewModelStoreOwner).get(
-            HomeScreenViewModel::class.java
-        )
-    viewModel.getJobsForCard("all")
-    var startDest = Routes.LOGIN
-    if(loginViewModel.isUserLoggedInLiveData.value == true)
-    {
-        startDest= Routes.JOBIFY_SCREEN
-
-    }
-
+fun AppNavHost(
+    modifier: Modifier = Modifier,
+    loginViewModel: LoginViewModel
+) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = startDest) {
-        composable(route = Routes.SIGN_UP) { SignUpScreen(navController) }
-        composable(route = Routes.LOGIN) { LoginScreen(navController) }
-        composable(route = Routes.RESET_PASSWORD) { ResetPasswordScreen(navController) }
-        composable(route = Routes.JOBIFY_SCREEN) { JobifyScreen(navController,viewModel, { search->
-            if (search.isEmpty())
-                viewModel.getJobsForCard("all")
-            else
-                viewModel.getJobsForCard(search)
-        }, {
-            viewModel.selectedJob = it
-        })}
-        composable(route =Routes.JOB_DESCRIPTION){JobDetailPage(navController)}
+    val startDest = AppRoutes.LOGIN.route
+    
+    NavHost(
+        navController = navController,
+        startDestination = startDest,
+        modifier = modifier
+    ) {
+        composable(AppRoutes.LOGIN.route) {
+            LoginScreen(navController = navController, loginViewModel = loginViewModel)
+        }
+        composable(AppRoutes.SIGN_UP.route) {
+            SignUpScreen(navController = navController)
+        }
+        composable(AppRoutes.HOME.route) {
+            JobifyScreen(navController = navController, viewModel = androidx.lifecycle.viewmodel.compose.viewModel<HomeScreenViewModel>())
+        }
+        composable(AppRoutes.JOB_DESCRIPTION.route) { backStackEntry ->
+            val jobId = backStackEntry.arguments?.getString("jobId")
+            requireNotNull(jobId) { "jobId parameter wasn't found. Please make sure it's set!" }
+            JobDetailPage(
+                jobId = jobId,
+                viewModel = androidx.lifecycle.viewmodel.compose.viewModel<HomeScreenViewModel>(),
+                navController = navController
+            )
+        }
+        composable(AppRoutes.JOB_APPLICATION.route) { backStackEntry ->
+            val jobId = backStackEntry.arguments?.getString("jobId")
+            requireNotNull(jobId) { "jobId parameter wasn't found. Please make sure it's set!" }
+            // TODO: Add JobApplicationScreen composable
+            // JobApplicationScreen(jobId = jobId, navController = navController)
+        }
+        composable(AppRoutes.JOB_SEARCH.route) {
+            JobSearchFragment(navController = navController)
+        }
+    }
+}
+
+class LoginViewModelFactory(
+    private val authRepository: AuthRepository
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return LoginViewModel(authRepository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

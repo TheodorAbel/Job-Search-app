@@ -1,100 +1,122 @@
 package com.sa7.jobfiy.authentication.ui.screens.login
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.sa7.jobfiy.R
-import com.sa7.jobfiy.authentication.ui.component.ButtonComponent
-import com.sa7.jobfiy.authentication.ui.component.ClickableTextComponent
-import com.sa7.jobfiy.authentication.ui.component.DividerTextComponent
-import com.sa7.jobfiy.authentication.ui.component.GoogleButtonComponent
-import com.sa7.jobfiy.authentication.ui.component.HeadingTextComponent
-import com.sa7.jobfiy.authentication.ui.component.NormalTextComponent
-import com.sa7.jobfiy.authentication.ui.component.PasswordTextFieldComponent
-import com.sa7.jobfiy.authentication.ui.component.TextFieldComponent
-import com.sa7.jobfiy.authentication.ui.component.UnderlinedTextComponent
-import com.sa7.jobfiy.ui.navigation.Routes
+import com.sa7.jobfiy.authentication.domain.model.LoginUiEvent
+import com.sa7.jobfiy.authentication.ui.component.*
+import com.sa7.jobfiy.ui.navigation.AppRoutes
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = viewModel()) {
+fun LoginScreen(
+    navController: NavController,
+    loginViewModel: LoginViewModel
+) {
+    val uiState by loginViewModel.loginUiState.collectAsStateWithLifecycle()
+    val isUserLoggedIn by loginViewModel.isUserLoggedIn.collectAsStateWithLifecycle()
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Surface(
-            color = Color.White,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(28.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                NormalTextComponent("Welcome back,")
-                HeadingTextComponent("Login to your account")
-
-                TextFieldComponent("Email", painterResource(id = R.drawable.email_asset), onTextSelected = {
-                    // listen to email changes
-                    loginViewModel.onEvent(LoginUiEvent.EmailChanged(it))
-                },
-                    // get email error status from viewmodel
-                    errorStatus = loginViewModel.loginUiState.value.emailError
-                )
-                PasswordTextFieldComponent("Password", true, onTextSelected = {
-                    // listen to password changes
-                    loginViewModel.onEvent(LoginUiEvent.PasswordChanged(it))
-                },
-                    // get password error status from viewmodel
-                    errorStatus = loginViewModel.loginUiState.value.passwordError
-                )
-                Spacer(modifier = Modifier.heightIn(10.dp))
-                UnderlinedTextComponent("Forgot your password", onClickButton = {navController.navigate(Routes.RESET_PASSWORD)})
-                Spacer(modifier = Modifier.heightIn(80.dp))
-                ButtonComponent("Login") {
-                    loginViewModel.onEvent(LoginUiEvent.LoginButtonClicked)
-                    if(loginViewModel.isUserLoggedInLiveData.value == true){
-                        navController.navigate(Routes.JOBIFY_SCREEN)
-                    }
-
-                }
-                Spacer(modifier = Modifier.heightIn(10.dp))
-                DividerTextComponent()
-                Spacer(modifier = Modifier.heightIn(10.dp))
-                GoogleButtonComponent()
-                ClickableTextComponent("Don't have an account? Sign Up") {
-                     navController.navigate(Routes.SIGN_UP)
-                }
+    // Navigate to home screen when user is logged in
+    LaunchedEffect(isUserLoggedIn) {
+        if (isUserLoggedIn) {
+            navController.navigate(AppRoutes.HOME.route) {
+                popUpTo(AppRoutes.LOGIN.route) { inclusive = true }
             }
         }
+    }
 
-        // show progress indicator when login is in progress
-        if (loginViewModel.loginProgress.value) {
-            CircularProgressIndicator(
-                color = Color.Black,
-                strokeWidth = 5.dp
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            HeadingTextComponent("Login to your account")
+
+            // Email Field
+            TextFieldComponent(
+                value = uiState.email,
+                labelValue = "Email",
+                icon = rememberVectorPainter(Icons.Default.Email),
+                onTextSelected = { email ->
+                    loginViewModel.onEvent(LoginUiEvent.EmailChanged(email))
+                },
+                errorStatus = uiState.emailError != null,
+                errorMessage = uiState.emailError
+            )
+
+            // Password Field
+            PasswordTextFieldComponent(
+                labelValue = "Password",
+                onTextSelected = { password ->
+                    loginViewModel.onEvent(LoginUiEvent.PasswordChanged(password))
+                },
+                errorStatus = uiState.passwordError != null,
+                errorMessage = uiState.passwordError,
+                icon = Icons.Default.Lock
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Login Button
+            ButtonComponent(
+                value = "Login",
+                onButtonClick = {
+                    loginViewModel.onEvent(LoginUiEvent.LoginButtonClicked)
+                }
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Divider
+            DividerTextComponent()
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Google Sign In
+            GoogleButtonComponent()
+
+            // Sign Up Option
+            ClickableTextComponent(
+                value = "Don't have an account? Sign Up",
+                onButtonClick = {
+                    navController.navigate(AppRoutes.SIGN_UP.route)
+                }
             )
         }
 
-    }
+        // Loading Indicator
+        if (uiState.isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
 
+        // Error Message
+        uiState.error?.let { error ->
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp)
+            )
+        }
+    }
 }

@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,13 +21,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sa7.jobfiy.R
+import com.sa7.jobfiy.authentication.domain.model.LoginUiEvent
 import com.sa7.jobfiy.authentication.ui.component.ButtonComponent
 import com.sa7.jobfiy.authentication.ui.component.TextFieldComponent
-import com.sa7.jobfiy.authentication.ui.screens.login.LoginUiEvent
 import com.sa7.jobfiy.authentication.ui.screens.login.LoginViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.runtime.setValue
 
 @Composable
 fun ResetPasswordScreen(navController: NavController, loginViewModel: LoginViewModel = viewModel()) {
+    var email by remember { mutableStateOf("") }
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -41,20 +48,23 @@ fun ResetPasswordScreen(navController: NavController, loginViewModel: LoginViewM
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Reset password screen content
-                TextFieldComponent("Email", painterResource(id = R.drawable.email_asset), onTextSelected = {
-                    loginViewModel.onEvent(LoginUiEvent.EmailChanged(it))
-                },
-                    errorStatus = loginViewModel.loginUiState.value.emailError,
-                    errorMessage = "Please enter a valid email address"
+                TextFieldComponent(
+                    labelValue = "Email",
+                    icon = Icons.Default.Email,
+                    onTextSelected = { email ->
+                        loginViewModel.onEvent(LoginUiEvent.EmailChanged(email))
+                    },
+                    errorStatus = false // or your error logic
                 )
 
                 Spacer(modifier = Modifier.heightIn(16.dp))
 
-                ButtonComponent("Send Email") {
-                    // Handle the send email button click event
-                    loginViewModel.onEvent(LoginUiEvent.ResetPasswordButtonClicked)
-                    navController.popBackStack()
-                }
+                ButtonComponent(
+                    value = "Reset Password",
+                    onButtonClick = {
+                        loginViewModel.onEvent(LoginUiEvent.ResetPasswordButtonClicked(email))
+                    }
+                )
             }
 
         }
