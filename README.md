@@ -72,15 +72,3 @@ Contributions are welcome! Please fork the repository and submit a pull request 
 # License
 This project is licensed under the MIT License. See the LICENSE file for more details.
 
-# Meet our team:
-- [Khaled Mahmoud](https://github.com/KhaledMa7mouad)
-- [Eyad Amro](https://github.com/eyadamr905)
-- [SA7](https://github.com/0xSA7)
-- [Mina](https://github.com/Mina-Kalifa)
-- [Sara](https://github.com/sara-saye)
-- [Polla joseph](https://github.com/PollaJoseph)
-### Special thanks for
-- Motivation: [Ahmed Atef](https://github.com/AhmedMaad)
-- Fixing Bugs: [Moamen Elsawy](https://github.com/moamenelsawy18)
-# Contact
-For any inquiries or support, please contact [0xSA7](https://www.linkedin.com/in/saleh-diaa-ahmed/).
